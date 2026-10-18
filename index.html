@@ -64,6 +64,7 @@ input::placeholder{color:var(--sub);opacity:.7}
 .dock .lb{font-size:10px;color:var(--sub)}
 .dock .on{background:var(--field)}
 .dock .on .lb{color:var(--blue);font-weight:600}
+.cell textarea{flex:1;min-height:72px;font-size:13px;color:var(--text);background:var(--field);border:0;border-radius:12px;padding:8px;resize:none;outline:0}
 </style>
 </head>
 <body>
@@ -107,6 +108,10 @@ input::placeholder{color:var(--sub);opacity:.7}
 <div class="cell"><b>남은 돈</b><b id="r4">0원</b></div>
 </div>
 
+<div class="sec" id="sM">엄마 설정</div>
+<div class="group" id="mom"></div>
+<p class="note" id="momn"></p>
+
 <div class="sec" id="s6">배경</div>
 <div class="group">
 <div class="cell sw" id="sw"></div>
@@ -125,10 +130,10 @@ input::placeholder{color:var(--sub);opacity:.7}
 var inc=[],exp=[],rt=null;
 var A=[{n:"엄마 도와주기",v:200,c:0},{n:"설거지 (평일)",v:1000,c:0},{n:"설거지 (주말)",v:0,c:0},{n:"나가 놀기",v:-500,c:0}];
 var P=[{n:"기본",c:["#7aa7ff","#ff9ad5","#7be0c3"]},{n:"오션",c:["#4facfe","#00c6ff","#43e97b"]},{n:"선셋",c:["#ff9a8b","#ff6a88","#ffd86f"]},{n:"라벤더",c:["#a18cd1","#fbc2eb","#8fd3f4"]},{n:"숲",c:["#2d6a4f","#95d5b2","#40916c"]}];
-var NV=[["s1","💵","기본 용돈","용돈"],["s2","🧹","활동","활동"],["s3","➕","추가 수입","수입"],["s4","🛒","지출","지출"],["s5","📊","요약","요약"],["s6","🎨","배경","배경"]];
+var NV=[["s1","💵","기본 용돈","용돈"],["s2","🧹","활동","활동"],["s3","➕","추가 수입","수입"],["s4","🛒","지출","지출"],["s5","📊","요약","요약"],["sM","👩","엄마 설정","엄마"],["s6","🎨","배경","배경"]];
 var BK="allow_bg",SK="allow_data";
-function save(){try{localStorage.setItem(SK,JSON.stringify({reg:$("amt").value,c:A.map(function(a){return a.c}),inc:inc,exp:exp}))}catch(e){}}
-function load(){try{var d=JSON.parse(localStorage.getItem(SK));if(!d)return;if(d.reg!==undefined&&d.reg!==null)$("amt").value=d.reg;if(Array.isArray(d.c))A.forEach(function(a,i){a.c=Math.max(0,+d.c[i]||0)});[[d.inc,inc],[d.exp,exp]].forEach(function(p){if(Array.isArray(p[0]))p[0].forEach(function(x){if(x&&+x.a)p[1].push({n:String(x.n),a:+x.a})})})}catch(e){}}
+function save(){try{localStorage.setItem(SK,JSON.stringify({reg:$("amt").value,c:A.map(function(a){return a.c}),r:A.map(function(a){return{n:a.n,v:a.v}}),inc:inc,exp:exp}))}catch(e){}}
+function load(){try{var d=JSON.parse(localStorage.getItem(SK));if(!d)return;if(d.reg!==undefined&&d.reg!==null)$("amt").value=d.reg;if(Array.isArray(d.r)&&d.r.length)A=d.r.map(function(x){return{n:String(x.n),v:+x.v||0,c:0}});if(Array.isArray(d.c))A.forEach(function(a,i){a.c=Math.max(0,+d.c[i]||0)});[[d.inc,inc],[d.exp,exp]].forEach(function(p){if(Array.isArray(p[0]))p[0].forEach(function(x){if(x&&+x.a)p[1].push({n:String(x.n),a:+x.a})})})}catch(e){}}
 var $=function(i){return document.getElementById(i)};
 var won=function(n){return n.toLocaleString("ko-KR")+"원"};
 function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
@@ -258,6 +263,95 @@ window.addEventListener("scroll",navSync,{passive:true});
 load();
 render();
 navSync();
+</script>
+
+<script>
+var M={h:""},open=false;try{M=JSON.parse(localStorage.getItem("allow_mom"))||M}catch(e){}
+function H(s){var a=0xdeadbeef,b=0x41c6ce57,c;for(var i=0;i<s.length;i++){c=s.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677)}a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909);b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);return(4294967296*(2097151&b)+(a>>>0)).toString(36)}
+function mSave(){try{localStorage.setItem("allow_mom",JSON.stringify(M))}catch(e){}}
+function say(t){$("momn").textContent=t||""}
+function mkIn(cls,ph,type,val){var i=mk("input",cls);i.placeholder=ph||"";if(type)i.type=type;if(val!==undefined)i.value=val;return i}
+function mkBtn(t,cls,fn){var b=mk("button",cls||"link",t);b.onclick=fn;return b}
+function mkCell(){var c=mk("div","cell");for(var i=0;i<arguments.length;i++)c.appendChild(arguments[i]);$("mom").appendChild(c);return c}
+function makeCode(){var p={g:+$("amt").value||0,r:A.map(function(a){return[a.n,a.v]})};var b=btoa(unescape(encodeURIComponent(JSON.stringify(p))));return"YD."+b+"."+H(b+M.h)}
+function applyCode(t){
+  var p=String(t||"").trim().split(".");
+  if(p.length!==3||p[0]!=="YD")return say("엄마 코드가 아니에요. 처음부터 끝까지 그대로 붙여 넣어 주세요.");
+  if(H(p[1]+M.h)!==p[2])return say("코드를 확인할 수 없어요. 엄마 폰과 같은 비밀번호인지, 코드가 잘렸는지 확인해 주세요.");
+  try{var d=JSON.parse(decodeURIComponent(escape(atob(p[1]))));
+    A=d.r.map(function(x,i){return{n:String(x[0]),v:+x[1]||0,c:(A[i]&&A[i].c)||0}});
+    $("amt").value=Math.max(0,+d.g||0);render();say("엄마가 정한 용돈과 활동 보상이 적용됐어요 ✅");return true}
+  catch(e){say("코드를 읽을 수 없어요. 다시 받아서 붙여 넣어 주세요.")}
+}
+function momPanel(){
+  $("mom").innerHTML="";$("amt").readOnly=!!M.h&&!open;
+  if(!M.h){
+    var pin=mkIn("ai","숫자 4자리","password");pin.inputMode="numeric";pin.maxLength=4;
+    mkCell(mk("span","","엄마 비밀번호"),pin,mkBtn("정하기","link",function(){
+      if(!/^\d{4}$/.test(pin.value))return say("숫자 4자리로 입력해 주세요.");
+      M.h=H("yd"+pin.value);mSave();open=true;momPanel();say("비밀번호가 정해졌어요. 앞으로 용돈과 보상 금액은 엄마만 바꿀 수 있어요.")}));
+    return;
+  }
+  if(!open){
+    var q=mkIn("ai","비밀번호","password");q.inputMode="numeric";q.maxLength=4;
+    mkCell(mk("span","","엄마 확인"),q,mkBtn("열기","link",function(){
+      if(H("yd"+q.value)!==M.h)return say("비밀번호가 달라요.");open=true;momPanel();say("")}));
+    var t=mk("textarea");t.placeholder="엄마가 보낸 코드를 붙여 넣어요";
+    mkCell(t,mkBtn("적용","link",function(){applyCode(t.value)}));
+    kidRow();
+    return;
+  }
+  A.forEach(function(a,i){
+    var n=mkIn("nm","활동 이름","text",a.n),v=mkIn("ai","금액","number",a.v);v.inputMode="numeric";
+    n.oninput=function(){a.n=n.value;render()};v.oninput=function(){a.v=+v.value||0;render()};
+    mkCell(n,v,mkBtn("삭제","link del",function(){A.splice(i,1);render();momPanel()}));
+  });
+  mkCell(mkBtn("＋ 활동 추가","link",function(){A.push({n:"새 활동",v:0,c:0});render();momPanel()}));
+  var out=mk("textarea");out.readOnly=true;out.placeholder="코드 만들기를 누르세요";
+  mkCell(out,mkBtn("코드 만들기","link",function(){out.value=makeCode();out.focus();out.select();say("이 코드를 카톡 등으로 아이에게 보내 주세요. 기본 용돈은 위 '이번 주 용돈'에서 바꿔요.")}));
+  momRow();
+  mkCell(mkBtn("🔒 잠그기","link",function(){open=false;momPanel();say("")}));
+}
+var DB="https://jihoo-5930b-default-rtdb.firebaseio.com";
+function hasDB(){return /^https:\/\/[^\/]+\.(firebaseio\.com|firebasedatabase\.app)$/.test(DB)&&DB.indexOf("YOUR-")<0}
+function fu(){return DB+"/fam/"+M.f+".json"}
+function rnd(){var c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",o="",i,r=new Uint8Array(8);try{crypto.getRandomValues(r)}catch(e){for(i=0;i<8;i++)r[i]=Math.random()*256}for(i=0;i<8;i++)o+=c[r[i]%c.length];return o}
+var pt=null;
+function qPush(){clearTimeout(pt);pt=setTimeout(doPush,1200)}
+function doPush(){
+  if(!hasDB())return say("서버 주소(DB)가 아직 설정되지 않았어요.");
+  fetch(fu(),{method:"PUT",body:JSON.stringify({c:makeCode(),t:Date.now()})}).then(function(r){if(!r.ok)throw 0;say("연결된 폰으로 보냈어요 ✅")}).catch(function(){say("보내지 못했어요. 인터넷 연결을 확인해 주세요.")});
+}
+function pull(manual){
+  if(M.r!=="kid"||!M.f||!M.h||open||!hasDB())return;
+  fetch(fu(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
+    if(!d||!d.c){if(manual===true)say("아직 엄마가 보낸 설정이 없어요.");return}
+    if(manual===true||d.t>(M.t||0)){applyCode(d.c);M.t=d.t;mSave()}
+  }).catch(function(){if(manual===true)say("받지 못했어요. 인터넷 연결을 확인해 주세요.")});
+}
+function unlink(){M.f="";M.r="";M.t=0;mSave();momPanel();say("")}
+function kidRow(){
+  if(M.r==="mom")return;
+  if(!M.f){var i=mkIn("ai","연동 코드","text");i.maxLength=8;
+    mkCell(mk("span","","엄마 폰 연동"),i,mkBtn("연결","link",function(){
+      var v=i.value.trim().toUpperCase();if(!/^[A-Z2-9]{8}$/.test(v))return say("연동 코드 8자리를 입력해 주세요.");
+      if(!hasDB())return say("서버 주소(DB)가 아직 설정되지 않았어요.");
+      M.f=v;M.r="kid";M.t=0;mSave();momPanel();pull(true)}));
+  }else mkCell(mk("span","","엄마 폰과 연동됨"),mkBtn("지금 받기","link",function(){pull(true)}));
+}
+function momRow(){
+  if(M.f&&M.r==="kid")return mkCell(mk("span","","엄마 폰과 연동됨"),mkBtn("연결 해제","link del",unlink));
+  if(!M.f)return mkCell(mk("span","","엄마 폰 연동"),mkBtn("연동 코드 만들기","link",function(){
+    if(!hasDB())return say("서버 주소(DB)가 아직 설정되지 않았어요.");
+    M.f=rnd();M.r="mom";mSave();doPush();momPanel();say("이 8자리 코드를 아이 폰의 '엄마 폰 연동'에 입력하면 연결돼요.")}));
+  mkCell(mk("span","","연동 코드"),mk("b","",M.f),mkBtn("다시 보내기","link",doPush));
+  mkCell(mkBtn("연결 해제","link del",unlink));
+}
+var _sv=save;save=function(){_sv();if(open&&M.r==="mom"&&M.f)qPush()};
+setInterval(pull,15000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)pull()});
+pull();
+momPanel();
 </script>
 </body>
 </html>
