@@ -47,6 +47,7 @@ input::placeholder{color:var(--sub);opacity:.7}
 .link{background:none;border:0;color:var(--blue);font:inherit;font-weight:600;cursor:pointer;padding:6px 0 6px 6px}
 .link.del{color:var(--red);font-weight:400}
 .cellbtn{display:block;width:100%;padding:14px;background:none;border:0;color:var(--red);font:inherit;cursor:pointer}
+.cellbtn.sv{color:var(--blue);font-weight:600}
 .good{color:var(--green)}.bad{color:var(--red)}
 .val,.cell b{font-variant-numeric:tabular-nums}
 .note{color:var(--sub);font-size:13px;margin:-12px 18px 24px}
@@ -114,6 +115,7 @@ input::placeholder{color:var(--sub);opacity:.7}
 </div>
 <input type="file" id="bf" accept="image/*" hidden>
 
+<div class="group"><button class="cellbtn sv" id="sv">💾 저장</button></div>
 <div class="group"><button class="cellbtn" id="rs">새 주 시작 (초기화)</button></div>
 <p class="note">활동 횟수, 추가 수입, 지출이 모두 지워져요.</p>
 </main>
@@ -124,7 +126,9 @@ var inc=[],exp=[],rt=null;
 var A=[{n:"엄마 도와주기",v:200,c:0},{n:"설거지 (평일)",v:1000,c:0},{n:"설거지 (주말)",v:0,c:0},{n:"나가 놀기",v:-500,c:0}];
 var P=[{n:"기본",c:["#7aa7ff","#ff9ad5","#7be0c3"]},{n:"오션",c:["#4facfe","#00c6ff","#43e97b"]},{n:"선셋",c:["#ff9a8b","#ff6a88","#ffd86f"]},{n:"라벤더",c:["#a18cd1","#fbc2eb","#8fd3f4"]},{n:"숲",c:["#2d6a4f","#95d5b2","#40916c"]}];
 var NV=[["s1","💵","기본 용돈","용돈"],["s2","🧹","활동","활동"],["s3","➕","추가 수입","수입"],["s4","🛒","지출","지출"],["s5","📊","요약","요약"],["s6","🎨","배경","배경"]];
-var BK="allow_bg";
+var BK="allow_bg",SK="allow_data";
+function save(){try{localStorage.setItem(SK,JSON.stringify({reg:$("amt").value,c:A.map(function(a){return a.c}),inc:inc,exp:exp}))}catch(e){}}
+function load(){try{var d=JSON.parse(localStorage.getItem(SK));if(!d)return;if(d.reg!==undefined&&d.reg!==null)$("amt").value=d.reg;if(Array.isArray(d.c))A.forEach(function(a,i){a.c=Math.max(0,+d.c[i]||0)});[[d.inc,inc],[d.exp,exp]].forEach(function(p){if(Array.isArray(p[0]))p[0].forEach(function(x){if(x&&+x.a)p[1].push({n:String(x.n),a:+x.a})})})}catch(e){}}
 var $=function(i){return document.getElementById(i)};
 var won=function(n){return n.toLocaleString("ko-KR")+"원"};
 function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
@@ -173,7 +177,7 @@ function render(){
   var set=function(id,v){$(id).textContent=won(v)};
   set("tt",tot);set("tot",tot);set("r1",reg);set("r5",act);set("r2",i);set("r3",e);set("r4",left);set("lf",left);
   var cls=left<0?"bad":"good";
-  $("r4").className=cls;$("lf").className=cls;
+  $("r4").className=cls;$("lf").className=cls;save();
 }
 function add(arr,n,a,def){
   var v=+$(a).value;
@@ -184,6 +188,8 @@ function add(arr,n,a,def){
 $("iB").onclick=function(){add(inc,"iN","iA","추가 수입")};
 $("eB").onclick=function(){add(exp,"eN","eA","지출")};
 $("amt").oninput=render;
+var svt=null;
+$("sv").onclick=function(){var b=this;save();b.textContent="✅ 저장됐어요";clearTimeout(svt);svt=setTimeout(function(){b.textContent="💾 저장"},1500)};
 $("rs").onclick=function(){
   var b=this;
   if(!b.dataset.arm){b.dataset.arm="1";b.textContent="정말 초기화할까요? 한 번 더 누르세요";rt=setTimeout(function(){delete b.dataset.arm;b.textContent="새 주 시작 (초기화)"},3000);return}
@@ -249,6 +255,7 @@ function navSync(){
   Array.prototype.forEach.call($("dock").children,function(b){b.classList.toggle("on",b.dataset.t===cur)});
 }
 window.addEventListener("scroll",navSync,{passive:true});
+load();
 render();
 navSync();
 </script>
