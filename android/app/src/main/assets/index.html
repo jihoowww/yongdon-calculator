@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>일주일 용돈 계산기</title>
+<script>try{var t=localStorage.getItem("allow_theme");document.documentElement.setAttribute("data-theme",t||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"))}catch(e){document.documentElement.setAttribute("data-theme","light")}</script>
+<style>
+:root{--bg:#eef1fb;--b1:#7aa7ff;--b2:#ff9ad5;--b3:#7be0c3;--text:#000;--sub:#333;--sep:rgba(60,60,67,.14);--blue:#3e91ff;--green:#1fa84f;--red:#e5372d;--glass:rgba(255,255,255,.1);--field:rgba(255,255,255,.55);--shadow:0 6px 24px rgba(30,40,100,.12);--barbg:rgba(238,241,251,.5);--bd:rgba(255,255,255,.55);color-scheme:light;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="dark"]{--bg:#05060d;--b1:#1d4ed8;--b2:#9d174d;--b3:#0f766e;--text:#fff;--sub:rgba(255,255,255,.72);--sep:rgba(255,255,255,.12);--blue:#4d9bff;--green:#4ade80;--red:#ff6b61;--glass:rgba(255,255,255,.09);--field:rgba(255,255,255,.1);--shadow:0 6px 24px rgba(0,0,0,.4);--barbg:rgba(5,6,13,.5);--bd:rgba(255,255,255,.2);color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"SamsungOne","Samsung Sans","Roboto","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:17px;line-height:1.3}
+.bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(55% 38% at 12% 8%,var(--b1),transparent 72%),radial-gradient(50% 38% at 92% 32%,var(--b2),transparent 72%),radial-gradient(60% 45% at 25% 92%,var(--b3),transparent 72%),var(--bg);opacity:.85}
+:root[data-theme="dark"] .bg{filter:brightness(.8)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--barbg);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:10}
+main{max-width:520px;margin:0 auto;padding:0 16px 48px}
+@media (max-width:640px){main{padding-right:68px}}
+.top{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+h1{font-size:36px;font-weight:600;letter-spacing:-.4px;margin:0}
+.subt{color:var(--sub);font-size:15px;margin:2px 0 12px}
+.group,.bar,.tg,.dock{border:1px solid var(--bd);background:var(--glass);-webkit-backdrop-filter:blur(8px) saturate(150%);backdrop-filter:blur(8px) saturate(150%);box-shadow:var(--shadow)}
+.tg{width:42px;height:42px;border-radius:50%;font-size:20px;cursor:pointer;padding:0}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;justify-content:space-around;margin:0 0 22px;padding:10px 16px;border-radius:30px}
+.bar div{text-align:center}
+.bar small{display:block;font-size:12px;color:var(--sub)}
+.bar b{font-size:20px;font-variant-numeric:tabular-nums}
+.sec{font-size:13px;color:var(--sub);margin:0 18px 7px;scroll-margin-top:calc(env(safe-area-inset-top,0px) + 84px)}
+.group{border-radius:28px;overflow:hidden;margin-bottom:24px}
+.cell{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 18px;min-height:48px}
+.cell::before{content:"";position:absolute;top:0;left:18px;right:18px;border-top:.5px solid var(--sep)}
+.group>:first-child::before,.group>.wrap:first-child>.cell:first-child::before{display:none}
+.cell[hidden]{display:none}
+.cell small{display:block;color:var(--sub);font-size:13px}
+.r{display:flex;align-items:center}
+.cnt{min-width:28px;text-align:right;margin-right:12px;font-variant-numeric:tabular-nums}
+.stepper{display:flex;background:var(--field);border-radius:18px;overflow:hidden}
+.stepper button{width:46px;height:34px;background:transparent;border:0;color:var(--blue);font-size:22px;line-height:1;padding:0;cursor:pointer}
+.stepper button+button{box-shadow:-1px 0 0 var(--sep)}
+.stepper button:disabled{opacity:.3}
+input{font:inherit;color:var(--text);background:transparent;border:0;outline:0;min-width:0}
+input::placeholder{color:var(--sub);opacity:.7}
+.cell input:not([type=color]){background:var(--field);border-radius:12px;padding:7px 10px}
+.amt{text-align:right;width:120px}
+.cell .nm{flex:1}
+.cell .ai{width:90px;text-align:right}
+.link{background:none;border:0;color:var(--blue);font:inherit;font-weight:600;cursor:pointer;padding:6px 0 6px 6px}
+.link.del{color:var(--red);font-weight:400}
+.cellbtn{display:block;width:100%;padding:14px;background:none;border:0;color:var(--red);font:inherit;cursor:pointer}
+.good{color:var(--green)}.bad{color:var(--red)}
+.val,.cell b{font-variant-numeric:tabular-nums}
+.note{color:var(--sub);font-size:13px;margin:-12px 18px 24px}
+.sw{justify-content:flex-start;flex-wrap:wrap;gap:14px}
+.sw button,.sw label{width:36px;height:36px;border-radius:50%;border:0;padding:0;cursor:pointer;flex:none;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.sw .on{box-shadow:0 0 0 3px var(--blue)}
+.sw label{position:relative;overflow:hidden;background:conic-gradient(#ff5e5e,#ffd23f,#5eff8a,#3fd2ff,#9b5eff,#ff5e5e)}
+.sw input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.dock{position:fixed;right:8px;top:50%;transform:translateY(-50%);z-index:8;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:24px;max-height:calc(100% - 140px);overflow-y:auto;scrollbar-width:none}
+.dock::-webkit-scrollbar{display:none}
+.dock button{display:flex;flex-direction:column;align-items:center;gap:1px;width:44px;padding:6px 0;background:transparent;border:0;border-radius:16px;color:var(--text);cursor:pointer;transition:transform .12s,background .2s}
+.dock button:active{transform:scale(.92)}
+.dock .ic{font-size:20px;line-height:1}
+.dock .lb{font-size:10px;color:var(--sub)}
+.dock .on{background:var(--field)}
+.dock .on .lb{color:var(--blue);font-weight:600}
+</style>
+</head>
+<body>
+<div class="bg" id="bg"></div>
+<main>
+<div class="top"><h1>용돈 계산기</h1><button class="tg" id="tg" aria-label="다크 모드 전환">🌙</button></div>
+<p class="subt">일주일 기준</p>
+
+<header class="bar">
+<div><small>총 용돈</small><b id="tt">0원</b></div>
+<div><small>남은 돈</small><b id="lf">0원</b></div>
+</header>
+
+<div class="sec" id="s1">기본 용돈</div>
+<div class="group">
+<label class="cell"><span>이번 주 용돈</span><span class="r"><input class="amt" id="amt" type="number" inputmode="numeric" value="5000"><span>원</span></span></label>
+</div>
+
+<div class="sec" id="s2">활동</div>
+<div class="group"><div class="wrap" id="acts"></div></div>
+
+<div class="sec" id="s3">추가 수입</div>
+<div class="group">
+<div class="cell"><input class="nm" id="iN" placeholder="추가 수입"><input class="ai" id="iA" type="number" inputmode="numeric" placeholder="금액"><button class="link" id="iB">추가</button></div>
+<div class="wrap" id="iL"></div>
+</div>
+
+<div class="sec" id="s4">지출</div>
+<div class="group">
+<div class="cell"><input class="nm" id="eN" placeholder="지출"><input class="ai" id="eA" type="number" inputmode="numeric" placeholder="금액"><button class="link" id="eB">추가</button></div>
+<div class="wrap" id="eL"></div>
+</div>
+
+<div class="sec" id="s5">요약</div>
+<div class="group">
+<div class="cell"><span>기본 용돈</span><span class="val" id="r1">0원</span></div>
+<div class="cell"><span>활동 용돈</span><span class="val" id="r5">0원</span></div>
+<div class="cell"><span>추가 수입</span><span class="val" id="r2">0원</span></div>
+<div class="cell"><b>총 용돈</b><b id="tot">0원</b></div>
+<div class="cell"><span>총 지출</span><span class="val" id="r3">0원</span></div>
+<div class="cell"><b>남은 돈</b><b id="r4">0원</b></div>
+</div>
+
+<div class="sec" id="s6">배경</div>
+<div class="group">
+<div class="cell sw" id="sw"></div>
+<div class="cell"><div><span>내 사진으로 설정</span><small id="bgm">사진을 골라 배경으로 써요</small></div><button class="link" id="bpick">사진 선택</button></div>
+<div class="cell" id="bclr" hidden><span>사진 배경 지우기</span><button class="link del" id="bdel">지우기</button></div>
+</div>
+<input type="file" id="bf" accept="image/*" hidden>
+
+<div class="group"><button class="cellbtn" id="rs">새 주 시작 (초기화)</button></div>
+<p class="note">활동 횟수, 추가 수입, 지출이 모두 지워져요.</p>
+</main>
+<nav class="dock" id="dock" aria-label="기능 바로가기"></nav>
+
+<script>
+var inc=[],exp=[],rt=null;
+var A=[{n:"엄마 도와주기",v:200,c:0},{n:"설거지 (평일)",v:1000,c:0},{n:"설거지 (주말)",v:0,c:0},{n:"나가 놀기",v:-500,c:0}];
+var P=[{n:"기본",c:["#7aa7ff","#ff9ad5","#7be0c3"]},{n:"오션",c:["#4facfe","#00c6ff","#43e97b"]},{n:"선셋",c:["#ff9a8b","#ff6a88","#ffd86f"]},{n:"라벤더",c:["#a18cd1","#fbc2eb","#8fd3f4"]},{n:"숲",c:["#2d6a4f","#95d5b2","#40916c"]}];
+var NV=[["s1","💵","기본 용돈","용돈"],["s2","🧹","활동","활동"],["s3","➕","추가 수입","수입"],["s4","🛒","지출","지출"],["s5","📊","요약","요약"],["s6","🎨","배경","배경"]];
+var BK="allow_bg";
+var $=function(i){return document.getElementById(i)};
+var won=function(n){return n.toLocaleString("ko-KR")+"원"};
+function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+function sum(a){return a.reduce(function(s,x){return s+x.a},0)}
+
+function setTheme(t,save){
+  document.documentElement.setAttribute("data-theme",t);
+  $("tg").textContent=t==="dark"?"☀️":"🌙";
+  if(save){try{localStorage.setItem("allow_theme",t)}catch(e){}}
+}
+$("tg").onclick=function(){setTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark",true)};
+setTheme(document.documentElement.getAttribute("data-theme")||"light",false);
+
+function actList(){
+  var box=$("acts");box.innerHTML="";
+  A.forEach(function(a){
+    var c=mk("div","cell"),l=mk("div");
+    l.appendChild(mk("span","",a.n));
+    l.appendChild(mk("small","",a.v===0?"무료":(a.v>0?"+":"")+won(a.v)));
+    var r=mk("div","r");
+    r.appendChild(mk("span","cnt",a.c));
+    var st=mk("div","stepper");
+    var m=mk("button","","−");m.setAttribute("aria-label",a.n+" 줄이기");m.disabled=a.c===0;
+    m.onclick=function(){a.c=Math.max(0,a.c-1);render()};
+    var p=mk("button","","+");p.setAttribute("aria-label",a.n+" 늘리기");
+    p.onclick=function(){a.c++;render()};
+    st.appendChild(m);st.appendChild(p);r.appendChild(st);
+    c.appendChild(l);c.appendChild(r);box.appendChild(c);
+  });
+}
+function list(arr,el){
+  el.innerHTML="";
+  arr.forEach(function(it,i){
+    var c=mk("div","cell");
+    c.appendChild(mk("span","",it.n+" · "+won(it.a)));
+    var b=mk("button","link del","삭제");
+    b.onclick=function(){arr.splice(i,1);render()};
+    c.appendChild(b);el.appendChild(c);
+  });
+}
+function render(){
+  actList();list(inc,$("iL"));list(exp,$("eL"));
+  var reg=+$("amt").value||0;
+  var act=A.reduce(function(s,a){return s+a.v*a.c},0);
+  var i=sum(inc),e=sum(exp),tot=reg+act+i,left=tot-e;
+  var set=function(id,v){$(id).textContent=won(v)};
+  set("tt",tot);set("tot",tot);set("r1",reg);set("r5",act);set("r2",i);set("r3",e);set("r4",left);set("lf",left);
+  var cls=left<0?"bad":"good";
+  $("r4").className=cls;$("lf").className=cls;
+}
+function add(arr,n,a,def){
+  var v=+$(a).value;
+  if(!v)return;
+  arr.push({n:$(n).value.trim()||def,a:v});
+  $(n).value="";$(a).value="";render();
+}
+$("iB").onclick=function(){add(inc,"iN","iA","추가 수입")};
+$("eB").onclick=function(){add(exp,"eN","eA","지출")};
+$("amt").oninput=render;
+$("rs").onclick=function(){
+  var b=this;
+  if(!b.dataset.arm){b.dataset.arm="1";b.textContent="정말 초기화할까요? 한 번 더 누르세요";rt=setTimeout(function(){delete b.dataset.arm;b.textContent="새 주 시작 (초기화)"},3000);return}
+  clearTimeout(rt);delete b.dataset.arm;b.textContent="새 주 시작 (초기화)";
+  A.forEach(function(a){a.c=0});inc.length=0;exp.length=0;render();
+};
+
+function setBg(s,save){
+  var r=document.documentElement,bg=$("bg"),sw=$("sw");
+  ["--b1","--b2","--b3"].forEach(function(k){r.style.removeProperty(k)});
+  bg.style.background="";bg.style.opacity="";
+  if(s.t==="p"&&s.i>0){P[s.i].c.forEach(function(c,j){r.style.setProperty("--b"+(j+1),c)})}
+  else if(s.t==="c"){["--b1","--b2","--b3"].forEach(function(k){r.style.setProperty(k,s.c)})}
+  else if(s.t==="img"){bg.style.background='url("'+s.d+'") center/cover no-repeat';bg.style.opacity="1"}
+  var key=s.t==="p"?"p"+s.i:s.t;
+  Array.prototype.forEach.call(sw.children,function(b){b.classList.toggle("on",b.dataset.k===key)});
+  $("bclr").hidden=s.t!=="img";
+  if(save){try{localStorage.setItem(BK,JSON.stringify(s))}catch(e){}}
+}
+P.forEach(function(p,i){
+  var b=mk("button","");b.dataset.k="p"+i;b.setAttribute("aria-label","배경 "+p.n);
+  b.style.background="linear-gradient(135deg,"+p.c.join(",")+")";
+  b.onclick=function(){setBg({t:"p",i:i},true)};
+  $("sw").appendChild(b);
+});
+var cl=mk("label","");cl.dataset.k="c";cl.setAttribute("aria-label","색 직접 고르기");
+var ci=mk("input","");ci.type="color";ci.value="#7aa7ff";
+ci.oninput=function(){setBg({t:"c",c:ci.value},true)};
+cl.appendChild(ci);$("sw").appendChild(cl);
+$("bpick").onclick=function(){$("bf").click()};
+$("bf").onchange=function(){
+  var f=this.files&&this.files[0];if(!f)return;
+  var fr=new FileReader();
+  fr.onload=function(){
+    var im=new Image();
+    im.onload=function(){
+      var s=Math.min(1,1600/Math.max(im.width,im.height));
+      var c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+      c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+      $("bgm").textContent="사진을 골라 배경으로 써요";
+      setBg({t:"img",d:c.toDataURL("image/jpeg",.82)},true);
+    };
+    im.onerror=function(){$("bgm").textContent="이 사진은 불러올 수 없어요. 다른 사진을 골라 주세요"};
+    im.src=fr.result;
+  };
+  fr.readAsDataURL(f);
+  this.value="";
+};
+$("bdel").onclick=function(){setBg({t:"p",i:0},true)};
+var sv=null;try{sv=JSON.parse(localStorage.getItem(BK))}catch(e){}
+setBg(sv&&sv.t?sv:{t:"p",i:0},false);
+
+NV.forEach(function(n){
+  var b=mk("button","");b.dataset.t=n[0];b.title=n[2];b.setAttribute("aria-label",n[2]+"(으)로 이동");
+  b.appendChild(mk("span","ic",n[1]));b.appendChild(mk("span","lb",n[3]));
+  b.onclick=function(){$(n[0]).scrollIntoView({behavior:"smooth",block:"start"})};
+  $("dock").appendChild(b);
+});
+function navSync(){
+  var cur=NV[0][0];
+  NV.forEach(function(n){if($(n[0]).getBoundingClientRect().top<=140)cur=n[0]});
+  if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4)cur=NV[NV.length-1][0];
+  Array.prototype.forEach.call($("dock").children,function(b){b.classList.toggle("on",b.dataset.t===cur)});
+}
+window.addEventListener("scroll",navSync,{passive:true});
+render();
+navSync();
+</script>
+</body>
+</html>
