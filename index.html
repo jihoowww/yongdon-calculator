@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>일주일 용돈 계산기</title>
-<script>try{var t=localStorage.getItem("allow_theme");document.documentElement.setAttribute("data-theme",t||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"))}catch(e){document.documentElement.setAttribute("data-theme","light")}</script>
+<script>try{var b=localStorage.getItem("allow_bg"),w=!b||JSON.parse(b).t==="w",t=w?"light":"dark";if(w)document.documentElement.classList.add("pm");if(localStorage.getItem("allow_glass")==="0")document.documentElement.classList.add("ng");document.documentElement.setAttribute("data-theme",t||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"))}catch(e){document.documentElement.setAttribute("data-theme","light")}</script>
 <style>
 :root{--bg:#eef1fb;--b1:#7aa7ff;--b2:#ff9ad5;--b3:#7be0c3;--text:#000;--sub:#333;--sep:rgba(60,60,67,.14);--blue:#3e91ff;--green:#1fa84f;--red:#e5372d;--glass:rgba(255,255,255,.1);--field:rgba(255,255,255,.55);--shadow:0 6px 24px rgba(30,40,100,.12);--barbg:rgba(238,241,251,.5);--bd:rgba(255,255,255,.55);color-scheme:light;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -65,23 +65,24 @@ input::placeholder{color:var(--sub);opacity:.7}
 .dock .on{background:var(--field)}
 .dock .on .lb{color:var(--blue);font-weight:600}
 .cell textarea{flex:1;min-height:72px;font-size:13px;color:var(--text);background:var(--field);border:0;border-radius:12px;padding:8px;resize:none;outline:0}
+html.pm,html.pm body{background:#fff}
+html.pm .bg{display:none}
+html.pm .group,html.pm .bar,html.pm .dock{background:#fff;border:1px solid #e5e7eb;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+html.pm{--bg:#fff;--field:#f3f4f6;--barbg:#fff}
+html.ng .group,html.ng .bar,html.ng .dock{--text:#000;--sub:#333;--sep:rgba(60,60,67,.14);--field:#f3f4f6;--blue:#3e91ff;--green:#1fa84f;--red:#e5372d;color:#000;background:#fff;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+#qk{display:block;width:44px;height:44px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.18);flex:none}
+#qk img{width:100%;height:100%;display:block}
 </style>
 </head>
 <body>
 <div class="bg" id="bg"></div>
 <main>
-<div class="top"><h1>용돈 계산기</h1><button class="tg" id="tg" aria-label="다크 모드 전환">🌙</button></div>
+<div class="top"><h1>용돈 계산기</h1><button class="tg" id="tg" aria-label="다크 모드 전환">🌙</button><a id="qk" href="ikuka:open" aria-label="아이쿠카 앱 열기"><img alt="아이쿠카" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAGFBMVEX////9//7L9eU62p4Dz4QAz4MAz4IAzX1jQZMfAAAED0lEQVR42u2XTW8bVRSG32NHqSM1njNphBQEJHWDAzSJk7hFZVHahg07VCSkbvvD+Ac0bJGgLVIWgKKSBJBY1LE7SpQPKfaca4t4nDY+LOYj45lJUAQrlFmNn5n3vufOOffca/oKF7tyuBRcCv63gqHBny5gnw8GBGqqwJbhGLjBaDp8hkA7lR+A8cpm9EJn8YVgfGGDswWd2ZWW0HW56wTAzH3TErrufuqcvpS/eWpQftLo2Vf29t5owQczKwGwMr9S59krW12x+7VKAJ42bHXFLq7ZWQ76/rcsZHseHTWvFABoeYUFdkF61sGHXtqhs2ILWS6x2i8rvoEtxK5hNXUr7aDl77pgU1IDz/pLC9Dyj+qxKamwDxKC3JZ43K5OTPQNRuQTD9CfPTpeentCD9Drfm6Sn9U0lMzH94QWvoaQJejULLHK94UWnohx0yG99St6Y19s4GhnWHo8VEBv1+u9frSOo52+6XIUUzhptYxY05sMGl02qkZ01hVretMGjS4LNJ0HBbUtBkBmkiEADPyqoj8CkC7veQDAdjQC3fWLiIGTqcSkaQOg4J4Ffdb4SIIhTTjQ4LpQjkMKwTkrTvyowugQTSIMSacGXk6MwyBKOCgDKtF4JCBAf5NwhDFJhkTQ4u8CQOccAfu5cQBAZ42AUgJjgWoVgXaeMYzF5EyyOawI0FkXgJN5oG1mcVen3Pysq0TzQIeB1uqCS3N1i9pznFrTtlHrpT44XHHUzgGwXm8qr5181nzqKBGbZPENLz5Hr9utNxrsFcpSgH7wE3q6v1v/kz1+z0utB9p+A4+6rrDQ8aNeCNQVW+h4idO1ZJUMK9ksZJUMAIx+6QOXrNJ8VpuZaB2w53lktau+585VJwC39gsZguM7u/v2yEj3+PaMF0zLB73bZcpywDZjz/PGPrp3EH1q7Hne2M37B5mdD8PvTOZGSuMPNkL/4at3eiOla8sRAEDx44/mp4B+rPVqe3EQJARQAYjPA4kNhezEskiBf7Nlhc7asM8ACUGrFXhWmyYbDArazVdB1W5Nv2sAmJONQZB0UDfaN9Hn8A6ACzcAiTlEkW7hoQPE9ttW7aGT8VmjDm3XV4ucBRICO4qNa4+dLJA9BxAMAYCbBIOlQc2gkWgdYpeLPAB4JowpctDpMMrv16EDYO05IMVUSM2t4Ga5JZBiDJTqkpXpazdifVgZyFdDwHKaiEhANUkU6mEt1p015WBa6/FuDaD/Ig5YUuVNyUqmfzjC6UXPfHRRwYUdLrhErTfVKIX+jphbioPkphirBPnFfzh+KwHOKo188PgkzEP+jK4Rln87yNEp+C+P0v7QdA7IcnBdN3HyiIEsh7HkKLnSuSEVJ6NTRAbIcnDPA5f/si4Fl4LT629iGezPG4ZxWAAAAABJRU5ErkJggg=="></a></div>
 <p class="subt">일주일 기준</p>
 
 <header class="bar">
 <div><small>총 용돈</small><b id="tt">0원</b></div>
-<div><small>남은 돈</small><b id="lf">0원</b></div>
 </header>
-
-<div class="sec" id="s1">기본 용돈</div>
-<div class="group">
-<label class="cell"><span>이번 주 용돈</span><span class="r"><input class="amt" id="amt" type="number" inputmode="numeric" value="5000"><span>원</span></span></label>
-</div>
 
 <div class="sec" id="s2">활동</div>
 <div class="group"><div class="wrap" id="acts"></div></div>
@@ -92,48 +93,41 @@ input::placeholder{color:var(--sub);opacity:.7}
 <div class="wrap" id="iL"></div>
 </div>
 
-<div class="sec" id="s4">지출</div>
-<div class="group">
-<div class="cell"><input class="nm" id="eN" placeholder="지출"><input class="ai" id="eA" type="number" inputmode="numeric" placeholder="금액"><button class="link" id="eB">추가</button></div>
-<div class="wrap" id="eL"></div>
-</div>
-
 <div class="sec" id="s5">요약</div>
 <div class="group">
-<div class="cell"><span>기본 용돈</span><span class="val" id="r1">0원</span></div>
 <div class="cell"><span>활동 용돈</span><span class="val" id="r5">0원</span></div>
 <div class="cell"><span>추가 수입</span><span class="val" id="r2">0원</span></div>
 <div class="cell"><b>총 용돈</b><b id="tot">0원</b></div>
-<div class="cell"><span>총 지출</span><span class="val" id="r3">0원</span></div>
-<div class="cell"><b>남은 돈</b><b id="r4">0원</b></div>
 </div>
 
 <div class="sec" id="sM">엄마 설정</div>
 <div class="group" id="mom"></div>
 <p class="note" id="momn"></p>
+<div class="sec" id="sK" hidden>아이 활동 현황</div>
+<div class="group" id="kst" hidden></div>
 
 <div class="sec" id="s6">배경</div>
 <div class="group">
 <div class="cell sw" id="sw"></div>
+<div class="cell"><div><span>유리 모드</span><small>색·사진 배경에서 보여요</small></div><button class="link" id="gl">켜짐</button></div>
 <div class="cell"><div><span>내 사진으로 설정</span><small id="bgm">사진을 골라 배경으로 써요</small></div><button class="link" id="bpick">사진 선택</button></div>
 <div class="cell" id="bclr" hidden><span>사진 배경 지우기</span><button class="link del" id="bdel">지우기</button></div>
 </div>
 <input type="file" id="bf" accept="image/*" hidden>
 
-<div class="group"><button class="cellbtn sv" id="sv">💾 저장</button></div>
 <div class="group"><button class="cellbtn" id="rs">새 주 시작 (초기화)</button></div>
-<p class="note">활동 횟수, 추가 수입, 지출이 모두 지워져요.</p>
+<p class="note">활동 횟수와 추가 수입이 모두 지워져요.</p>
 </main>
 <nav class="dock" id="dock" aria-label="기능 바로가기"></nav>
 
 <script>
-var inc=[],exp=[],rt=null;
+var inc=[],rt=null;
 var A=[{n:"엄마 도와주기",v:200,c:0},{n:"설거지 (평일)",v:1000,c:0},{n:"설거지 (주말)",v:0,c:0},{n:"나가 놀기",v:-500,c:0}];
 var P=[{n:"기본",c:["#7aa7ff","#ff9ad5","#7be0c3"]},{n:"오션",c:["#4facfe","#00c6ff","#43e97b"]},{n:"선셋",c:["#ff9a8b","#ff6a88","#ffd86f"]},{n:"라벤더",c:["#a18cd1","#fbc2eb","#8fd3f4"]},{n:"숲",c:["#2d6a4f","#95d5b2","#40916c"]}];
-var NV=[["s1","💵","기본 용돈","용돈"],["s2","🧹","활동","활동"],["s3","➕","추가 수입","수입"],["s4","🛒","지출","지출"],["s5","📊","요약","요약"],["sM","👩","엄마 설정","엄마"],["s6","🎨","배경","배경"]];
+var NV=[["s2","🧹","활동","활동"],["s3","➕","추가 수입","수입"],["s5","📊","요약","요약"],["sM","👩","엄마 설정","엄마"],["s6","🎨","배경","배경"]];
 var BK="allow_bg",SK="allow_data";
-function save(){try{localStorage.setItem(SK,JSON.stringify({reg:$("amt").value,c:A.map(function(a){return a.c}),r:A.map(function(a){return{n:a.n,v:a.v}}),inc:inc,exp:exp}))}catch(e){}}
-function load(){try{var d=JSON.parse(localStorage.getItem(SK));if(!d)return;if(d.reg!==undefined&&d.reg!==null)$("amt").value=d.reg;if(Array.isArray(d.r)&&d.r.length)A=d.r.map(function(x){return{n:String(x.n),v:+x.v||0,c:0}});if(Array.isArray(d.c))A.forEach(function(a,i){a.c=Math.max(0,+d.c[i]||0)});[[d.inc,inc],[d.exp,exp]].forEach(function(p){if(Array.isArray(p[0]))p[0].forEach(function(x){if(x&&+x.a)p[1].push({n:String(x.n),a:+x.a})})})}catch(e){}}
+function save(){try{localStorage.setItem(SK,JSON.stringify({c:A.map(function(a){return a.c}),r:A.map(function(a){return{n:a.n,v:a.v}}),inc:inc}))}catch(e){}}
+function load(){try{var d=JSON.parse(localStorage.getItem(SK));if(!d)return;if(Array.isArray(d.r)&&d.r.length)A=d.r.map(function(x){return{n:String(x.n),v:+x.v||0,c:0}});if(Array.isArray(d.c))A.forEach(function(a,i){a.c=Math.max(0,+d.c[i]||0)});[[d.inc,inc]].forEach(function(p){if(Array.isArray(p[0]))p[0].forEach(function(x){if(x&&+x.a)p[1].push({n:String(x.n),a:+x.a})})})}catch(e){}}
 var $=function(i){return document.getElementById(i)};
 var won=function(n){return n.toLocaleString("ko-KR")+"원"};
 function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
@@ -175,14 +169,12 @@ function list(arr,el){
   });
 }
 function render(){
-  actList();list(inc,$("iL"));list(exp,$("eL"));
-  var reg=+$("amt").value||0;
-  var act=A.reduce(function(s,a){return s+a.v*a.c},0);
-  var i=sum(inc),e=sum(exp),tot=reg+act+i,left=tot-e;
+  actList();list(inc,$("iL"));
+    var act=A.reduce(function(s,a){return s+a.v*a.c},0);
+  var i=sum(inc),tot=act+i;
   var set=function(id,v){$(id).textContent=won(v)};
-  set("tt",tot);set("tot",tot);set("r1",reg);set("r5",act);set("r2",i);set("r3",e);set("r4",left);set("lf",left);
-  var cls=left<0?"bad":"good";
-  $("r4").className=cls;$("lf").className=cls;save();
+  set("tt",tot);set("tot",tot);set("r5",act);set("r2",i);
+  save();
 }
 function add(arr,n,a,def){
   var v=+$(a).value;
@@ -191,19 +183,16 @@ function add(arr,n,a,def){
   $(n).value="";$(a).value="";render();
 }
 $("iB").onclick=function(){add(inc,"iN","iA","추가 수입")};
-$("eB").onclick=function(){add(exp,"eN","eA","지출")};
-$("amt").oninput=render;
-var svt=null;
-$("sv").onclick=function(){var b=this;save();b.textContent="✅ 저장됐어요";clearTimeout(svt);svt=setTimeout(function(){b.textContent="💾 저장"},1500)};
 $("rs").onclick=function(){
   var b=this;
   if(!b.dataset.arm){b.dataset.arm="1";b.textContent="정말 초기화할까요? 한 번 더 누르세요";rt=setTimeout(function(){delete b.dataset.arm;b.textContent="새 주 시작 (초기화)"},3000);return}
   clearTimeout(rt);delete b.dataset.arm;b.textContent="새 주 시작 (초기화)";
-  A.forEach(function(a){a.c=0});inc.length=0;exp.length=0;render();
+  A.forEach(function(a){a.c=0});inc.length=0;render();
 };
 
 function setBg(s,save){
   var r=document.documentElement,bg=$("bg"),sw=$("sw");
+  r.classList.toggle("pm",s.t==="w");setTheme(s.t==="w"?"light":"dark",false);
   ["--b1","--b2","--b3"].forEach(function(k){r.style.removeProperty(k)});
   bg.style.background="";bg.style.opacity="";
   if(s.t==="p"&&s.i>0){P[s.i].c.forEach(function(c,j){r.style.setProperty("--b"+(j+1),c)})}
@@ -214,6 +203,7 @@ function setBg(s,save){
   $("bclr").hidden=s.t!=="img";
   if(save){try{localStorage.setItem(BK,JSON.stringify(s))}catch(e){}}
 }
+(function(){var b=mk("button","");b.dataset.k="w";b.setAttribute("aria-label","배경 화이트");b.style.background="#fff";b.style.border="1px solid #d1d5db";b.onclick=function(){setBg({t:"w"},true)};$("sw").appendChild(b)})();
 P.forEach(function(p,i){
   var b=mk("button","");b.dataset.k="p"+i;b.setAttribute("aria-label","배경 "+p.n);
   b.style.background="linear-gradient(135deg,"+p.c.join(",")+")";
@@ -243,9 +233,13 @@ $("bf").onchange=function(){
   fr.readAsDataURL(f);
   this.value="";
 };
-$("bdel").onclick=function(){setBg({t:"p",i:0},true)};
+$("bdel").onclick=function(){setBg({t:"w"},true)};
 var sv=null;try{sv=JSON.parse(localStorage.getItem(BK))}catch(e){}
-setBg(sv&&sv.t?sv:{t:"p",i:0},false);
+setBg(sv&&sv.t?sv:{t:"w"},false);
+function setGlass(on,save){document.documentElement.classList.toggle("ng",!on);$("gl").textContent=on?"켜짐":"꺼짐";if(save){try{localStorage.setItem("allow_glass",on?"1":"0")}catch(e){}}}
+$("gl").onclick=function(){setGlass(document.documentElement.classList.contains("ng"),true)};
+var gv=null;try{gv=localStorage.getItem("allow_glass")}catch(e){}
+setGlass(gv!=="0",false);
 
 NV.forEach(function(n){
   var b=mk("button","");b.dataset.t=n[0];b.title=n[2];b.setAttribute("aria-label",n[2]+"(으)로 이동");
@@ -273,23 +267,23 @@ function say(t){$("momn").textContent=t||""}
 function mkIn(cls,ph,type,val){var i=mk("input",cls);i.placeholder=ph||"";if(type)i.type=type;if(val!==undefined)i.value=val;return i}
 function mkBtn(t,cls,fn){var b=mk("button",cls||"link",t);b.onclick=fn;return b}
 function mkCell(){var c=mk("div","cell");for(var i=0;i<arguments.length;i++)c.appendChild(arguments[i]);$("mom").appendChild(c);return c}
-function makeCode(){var p={g:+$("amt").value||0,r:A.map(function(a){return[a.n,a.v]})};var b=btoa(unescape(encodeURIComponent(JSON.stringify(p))));return"YD."+b+"."+H(b+M.h)}
+function makeCode(){var p={r:A.map(function(a){return[a.n,a.v]})};var b=btoa(unescape(encodeURIComponent(JSON.stringify(p))));return"YD."+b+"."+H(b+M.h)}
 function applyCode(t){
   var p=String(t||"").trim().split(".");
   if(p.length!==3||p[0]!=="YD")return say("엄마 코드가 아니에요. 처음부터 끝까지 그대로 붙여 넣어 주세요.");
   if(H(p[1]+M.h)!==p[2])return say("코드를 확인할 수 없어요. 엄마 폰과 같은 비밀번호인지, 코드가 잘렸는지 확인해 주세요.");
   try{var d=JSON.parse(decodeURIComponent(escape(atob(p[1]))));
     A=d.r.map(function(x,i){return{n:String(x[0]),v:+x[1]||0,c:(A[i]&&A[i].c)||0}});
-    $("amt").value=Math.max(0,+d.g||0);render();say("엄마가 정한 용돈과 활동 보상이 적용됐어요 ✅");return true}
+    render();say("엄마가 정한 활동 보상이 적용됐어요 ✅");return true}
   catch(e){say("코드를 읽을 수 없어요. 다시 받아서 붙여 넣어 주세요.")}
 }
 function momPanel(){
-  $("mom").innerHTML="";$("amt").readOnly=!!M.h&&!open;
+  stream();applyRole();$("mom").innerHTML="";
   if(!M.h){
     var pin=mkIn("ai","숫자 4자리","password");pin.inputMode="numeric";pin.maxLength=4;
     mkCell(mk("span","","엄마 비밀번호"),pin,mkBtn("정하기","link",function(){
       if(!/^\d{4}$/.test(pin.value))return say("숫자 4자리로 입력해 주세요.");
-      M.h=H("yd"+pin.value);mSave();open=true;momPanel();say("비밀번호가 정해졌어요. 앞으로 용돈과 보상 금액은 엄마만 바꿀 수 있어요.")}));
+      M.h=H("yd"+pin.value);mSave();open=true;momPanel();say("비밀번호가 정해졌어요. 앞으로 활동 보상 금액은 엄마만 바꿀 수 있어요.")}));
     return;
   }
   if(!open){
@@ -308,7 +302,7 @@ function momPanel(){
   });
   mkCell(mkBtn("＋ 활동 추가","link",function(){A.push({n:"새 활동",v:0,c:0});render();momPanel()}));
   var out=mk("textarea");out.readOnly=true;out.placeholder="코드 만들기를 누르세요";
-  mkCell(out,mkBtn("코드 만들기","link",function(){out.value=makeCode();out.focus();out.select();say("이 코드를 카톡 등으로 아이에게 보내 주세요. 기본 용돈은 위 '이번 주 용돈'에서 바꿔요.")}));
+  mkCell(out,mkBtn("코드 만들기","link",function(){out.value=makeCode();out.focus();out.select();say("이 코드를 카톡 등으로 아이에게 보내 주세요.")}));
   momRow();
   mkCell(mkBtn("🔒 잠그기","link",function(){open=false;momPanel();say("")}));
 }
@@ -320,7 +314,7 @@ var pt=null;
 function qPush(){clearTimeout(pt);pt=setTimeout(doPush,1200)}
 function doPush(){
   if(!hasDB())return say("서버 주소(DB)가 아직 설정되지 않았어요.");
-  fetch(fu(),{method:"PUT",body:JSON.stringify({c:makeCode(),t:Date.now()})}).then(function(r){if(!r.ok)throw 0;say("연결된 폰으로 보냈어요 ✅")}).catch(function(){say("보내지 못했어요. 인터넷 연결을 확인해 주세요.")});
+  fetch(fu(),{method:"PATCH",body:JSON.stringify({c:makeCode(),t:Date.now()})}).then(function(r){if(!r.ok)throw 0;say("연결된 폰으로 보냈어요 ✅")}).catch(function(){say("보내지 못했어요. 인터넷 연결을 확인해 주세요.")});
 }
 function pull(manual){
   if(M.r!=="kid"||!M.f||!M.h||open||!hasDB())return;
@@ -337,7 +331,7 @@ function kidRow(){
       var v=i.value.trim().toUpperCase();if(!/^[A-Z2-9]{8}$/.test(v))return say("연동 코드 8자리를 입력해 주세요.");
       if(!hasDB())return say("서버 주소(DB)가 아직 설정되지 않았어요.");
       M.f=v;M.r="kid";M.t=0;mSave();momPanel();pull(true)}));
-  }else mkCell(mk("span","","엄마 폰과 연동됨"),mkBtn("지금 받기","link",function(){pull(true)}));
+  }else mkCell(mk("span","","엄마 폰과 연동됨 · 활동 횟수 공유"),mkBtn("지금 받기","link",function(){pull(true)}));
 }
 function momRow(){
   if(M.f&&M.r==="kid")return mkCell(mk("span","","엄마 폰과 연동됨"),mkBtn("연결 해제","link del",unlink));
@@ -347,10 +341,49 @@ function momRow(){
   mkCell(mk("span","","연동 코드"),mk("b","",M.f),mkBtn("다시 보내기","link",doPush));
   mkCell(mkBtn("연결 해제","link del",unlink));
 }
-var _sv=save;save=function(){_sv();if(open&&M.r==="mom"&&M.f)qPush()};
-setInterval(pull,15000);
-document.addEventListener("visibilitychange",function(){if(!document.hidden)pull()});
-pull();
+function applyRole(){
+  var m=M.r==="mom",th="light";
+  var d=m?"none":"";
+  $("s2").style.display=$("acts").parentNode.style.display=d;
+  $("tg").style.display="none";
+  Array.prototype.forEach.call($("dock").children,function(b){b.style.display=(m&&b.dataset.t==="s2")?"none":""});
+}
+var es=null,esKey="",est=null;
+function stream(){
+  var key=M.f&&hasDB()&&(M.r==="kid"||M.r==="mom")?M.f+M.r:"";
+  if(key===esKey)return;
+  if(es){es.close();es=null}
+  esKey=key;if(!key||typeof EventSource==="undefined")return;
+  es=new EventSource(fu());
+  var go=function(){clearTimeout(est);est=setTimeout(function(){pull();pullK()},300)};
+  es.addEventListener("put",go);es.addEventListener("patch",go);
+}
+var K=null,rt2=null,repDirty=false;
+function qRep(){clearTimeout(rt2);rt2=setTimeout(doRep,1500)}
+function doRep(){
+  if(M.r!=="kid"||!M.f||!hasDB())return;
+  repDirty=true;
+  fetch(DB+"/fam/"+M.f+"/k.json",{method:"PUT",body:JSON.stringify({t:Date.now(),a:A.map(function(a){return[a.n,a.c,a.v]})})}).then(function(r){if(r.ok)repDirty=false}).catch(function(){});
+}
+function pullK(manual){
+  if(M.r!=="mom"||!M.f||!hasDB())return;
+  fetch(DB+"/fam/"+M.f+"/k.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){K=d;showK()}).catch(function(){if(manual===true)say("받지 못했어요. 인터넷 연결을 확인해 주세요.")});
+}
+function showK(){
+  var g=$("kst"),on=M.r==="mom"&&M.f;g.hidden=$("sK").hidden=!on;if(!on)return;
+  g.innerHTML="";
+  function c(l,r,b){var e=mk("div","cell");e.appendChild(mk("span","",l));if(r!==undefined)e.appendChild(mk(b?"b":"span",b?"":"val",r));g.appendChild(e)}
+  if(!K||!K.a)c("아직 아이 폰에서 받은 기록이 없어요");
+  else{var tot=0;K.a.forEach(function(x){tot+=(+x[1]||0)*(+x[2]||0);c(String(x[0]),(+x[1]||0)+"번")});
+    c("활동 용돈 합계",won(tot),1);
+    var d=new Date(K.t);c("마지막 업데이트 "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2))}
+  var e=mk("div","cell");e.appendChild(mkBtn("새로고침","link",function(){pullK(true)}));g.appendChild(e);
+}
+var _sv=save;save=function(){_sv();if(open&&M.r==="mom"&&M.f)qPush();if(M.r==="kid"&&M.f)qRep()};
+setInterval(function(){pull();pullK();if(repDirty)doRep()},15000);
+document.addEventListener("visibilitychange",function(){if(document.hidden)_sv();else{pull();pullK();if(M.r==="kid")qRep()}});
+window.addEventListener("pagehide",function(){_sv()});
+pull();pullK();if(M.r==="kid"&&M.f)qRep();
 momPanel();
 </script>
 </body>
