@@ -337,14 +337,24 @@ function pull(manual){
   }).catch(function(){if(manual===true)say("받지 못했어요. 인터넷 연결을 확인해 주세요.")});
 }
 function unlink(){M.f="";M.r="";M.t=0;mSave();momPanel();say("")}
+function pickName(){
+  var nb=mk("span","");
+  ["지안","지후"].forEach(function(n){nb.appendChild(mkBtn((M.n===n?"✓ ":"")+n,"link",function(){M.n=n;mSave();momPanel();qRep()}))});
+  mkCell(mk("span","","누구예요?"),nb);
+}
 function kidRow(){
   if(M.r==="mom")return;
   if(!M.f){var i=mkIn("ai","연동 코드","text");i.maxLength=8;
+    pickName();
     mkCell(mk("span","","엄마 폰 연동"),i,mkBtn("연결","link",function(){
+      if(!M.n)return say("먼저 지안인지 지후인지 골라 주세요.");
       var v=i.value.trim().toUpperCase();if(!/^[A-Z2-9]{8}$/.test(v))return say("연동 코드 8자리를 입력해 주세요.");
       if(!hasDB())return say("서버 주소(DB)가 아직 설정되지 않았어요.");
       M.f=v;M.r="kid";M.t=0;mSave();momPanel();pull(true)}));
-  }else mkCell(mk("span","","엄마 폰과 연동됨 · 활동 횟수 공유"),mkBtn("지금 받기","link",function(){pull(true)}));
+  }else{
+    if(!M.n)pickName();
+    mkCell(mk("span","","엄마 폰과 연동됨"+(M.n?" · "+M.n:"")+" · 활동 횟수 공유"),mkBtn("지금 받기","link",function(){pull(true)}));
+  }
 }
 function momRow(){
   if(M.f&&M.r==="kid")return mkCell(mk("span","","엄마 폰과 연동됨"),mkBtn("연결 해제","link del",unlink));
@@ -376,9 +386,9 @@ function stream(){
 var K=null,rt2=null,repDirty=false;
 function qRep(){clearTimeout(rt2);rt2=setTimeout(doRep,1500)}
 function doRep(){
-  if(M.r!=="kid"||!M.f||!hasDB())return;
+  if(M.r!=="kid"||!M.f||!M.n||!hasDB())return;
   repDirty=true;
-  fetch(DB+"/fam/"+M.f+"/k.json",{method:"PUT",body:JSON.stringify({t:Date.now(),a:A.map(function(a){return[a.n,a.c,a.v]})})}).then(function(r){if(r.ok)repDirty=false}).catch(function(){});
+  fetch(DB+"/fam/"+M.f+"/k/"+encodeURIComponent(M.n)+".json",{method:"PUT",body:JSON.stringify({t:Date.now(),a:A.map(function(a){return[a.n,a.c,a.v]})})}).then(function(r){if(r.ok)repDirty=false}).catch(function(){});
 }
 function pullK(manual){
   if(M.r!=="mom"||!M.f||!hasDB())return;
@@ -388,10 +398,13 @@ function showK(){
   var g=$("kst"),on=M.r==="mom"&&M.f;g.hidden=$("sK").hidden=!on;if(!on)return;
   g.innerHTML="";
   function c(l,r,b){var e=mk("div","cell");e.appendChild(mk("span","",l));if(r!==undefined)e.appendChild(mk(b?"b":"span",b?"":"val",r));g.appendChild(e)}
-  if(!K||!K.a)c("아직 아이 폰에서 받은 기록이 없어요");
-  else{var tot=0;K.a.forEach(function(x){tot+=(+x[1]||0)*(+x[2]||0);c(String(x[0]),(+x[1]||0)+"번")});
+  ["지안","지후"].forEach(function(n){
+    var k=K&&K[n],h=mk("div","cell");h.appendChild(mk("b","",n));g.appendChild(h);
+    if(!k||!k.a){c("아직 받은 기록이 없어요");return}
+    var tot=0;k.a.forEach(function(x){tot+=(+x[1]||0)*(+x[2]||0);c(String(x[0]),(+x[1]||0)+"번")});
     c("활동 용돈 합계",won(tot),1);
-    var d=new Date(K.t);c("마지막 업데이트 "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2))}
+    var d=new Date(k.t);c("마지막 업데이트 "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2));
+  });
   var e=mk("div","cell");e.appendChild(mkBtn("새로고침","link",function(){pullK(true)}));g.appendChild(e);
 }
 var _sv=save;save=function(){_sv();if(open&&M.r==="mom"&&M.f)qPush();if(M.r==="kid"&&M.f)qRep()};
