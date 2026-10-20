@@ -72,6 +72,9 @@ html.pm{--bg:#fff;--field:#f3f4f6;--barbg:#fff}
 html.ng .group,html.ng .bar,html.ng .dock{--text:#000;--sub:#333;--sep:rgba(60,60,67,.14);--field:#f3f4f6;--blue:#3e91ff;--green:#1fa84f;--red:#e5372d;color:#000;background:#fff;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
 #qk{display:block;width:44px;height:44px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.18);flex:none}
 #qk img{width:100%;height:100%;display:block}
+.cell textarea.mt{font-size:15px;min-height:64px}
+.mx{flex:1;min-width:0}
+.mx span{display:block;white-space:pre-wrap;word-break:break-word}
 </style>
 </head>
 <body>
@@ -100,6 +103,15 @@ html.ng .group,html.ng .bar,html.ng .dock{--text:#000;--sub:#333;--sep:rgba(60,6
 <div class="cell"><b>총 용돈</b><b id="tot">0원</b></div>
 </div>
 
+<div class="sec" id="sP" hidden>엄마가 남긴 메모</div>
+<div class="group" id="mnl" hidden></div>
+
+<div class="sec" id="sN">메모</div>
+<div class="group">
+<div class="cell"><textarea class="mt" id="nT" placeholder="메모를 적어요"></textarea><button class="link" id="nB">추가</button></div>
+<div class="wrap" id="nL"></div>
+</div>
+
 <div class="sec" id="sM">엄마 설정</div>
 <div class="group" id="mom"></div>
 <p class="note" id="momn"></p>
@@ -124,7 +136,7 @@ html.ng .group,html.ng .bar,html.ng .dock{--text:#000;--sub:#333;--sep:rgba(60,6
 var inc=[],rt=null;
 var A=[{n:"엄마 도와주기",v:200,c:0},{n:"설거지 (평일)",v:1000,c:0},{n:"설거지 (주말)",v:0,c:0},{n:"나가 놀기",v:-500,c:0}];
 var P=[{n:"기본",c:["#7aa7ff","#ff9ad5","#7be0c3"]},{n:"오션",c:["#4facfe","#00c6ff","#43e97b"]},{n:"선셋",c:["#ff9a8b","#ff6a88","#ffd86f"]},{n:"라벤더",c:["#a18cd1","#fbc2eb","#8fd3f4"]},{n:"숲",c:["#2d6a4f","#95d5b2","#40916c"]}];
-var NV=[["s2","🧹","활동","활동"],["s3","➕","추가 수입","수입"],["s5","📊","요약","요약"],["sM","👩","엄마 설정","엄마"],["s6","🎨","배경","배경"]];
+var NV=[["s2","🧹","활동","활동"],["s3","➕","추가 수입","수입"],["s5","📊","요약","요약"],["sN","📝","메모","메모"],["sM","👩","엄마 설정","엄마"],["s6","🎨","배경","배경"]];
 var BK="allow_bg",SK="allow_data";
 function save(){try{localStorage.setItem(SK,JSON.stringify({c:A.map(function(a){return a.c}),r:A.map(function(a){return{n:a.n,v:a.v}}),inc:inc}))}catch(e){}}
 function load(){try{var d=JSON.parse(localStorage.getItem(SK));if(!d)return;if(Array.isArray(d.r)&&d.r.length)A=d.r.map(function(x){return{n:String(x.n),v:+x.v||0,c:0}});if(Array.isArray(d.c))A.forEach(function(a,i){a.c=Math.max(0,+d.c[i]||0)});[[d.inc,inc]].forEach(function(p){if(Array.isArray(p[0]))p[0].forEach(function(x){if(x&&+x.a)p[1].push({n:String(x.n),a:+x.a})})})}catch(e){}}
@@ -319,6 +331,7 @@ function doPush(){
 function pull(manual){
   if(M.r!=="kid"||!M.f||!M.h||open||!hasDB())return;
   fetch(fu(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
+    if(d){MN=d.n||null;showMN()}
     if(!d||!d.c){if(manual===true)say("아직 엄마가 보낸 설정이 없어요.");return}
     if(manual===true||d.t>(M.t||0)){applyCode(d.c);M.t=d.t;mSave()}
   }).catch(function(){if(manual===true)say("받지 못했어요. 인터넷 연결을 확인해 주세요.")});
@@ -337,12 +350,14 @@ function momRow(){
   if(M.f&&M.r==="kid")return mkCell(mk("span","","엄마 폰과 연동됨"),mkBtn("연결 해제","link del",unlink));
   if(!M.f)return mkCell(mk("span","","엄마 폰 연동"),mkBtn("연동 코드 만들기","link",function(){
     if(!hasDB())return say("서버 주소(DB)가 아직 설정되지 않았어요.");
-    M.f=rnd();M.r="mom";mSave();doPush();momPanel();say("이 8자리 코드를 아이 폰의 '엄마 폰 연동'에 입력하면 연결돼요.")}));
+    M.f=rnd();M.r="mom";mSave();doPush();doNote();momPanel();say("이 8자리 코드를 아이 폰의 '엄마 폰 연동'에 입력하면 연결돼요.")}));
   mkCell(mk("span","","연동 코드"),mk("b","",M.f),mkBtn("다시 보내기","link",doPush));
   mkCell(mkBtn("연결 해제","link del",unlink));
 }
 function applyRole(){
   var m=M.r==="mom",th="light";
+  $("sN").textContent=(m&&M.f)?"아이에게 남기는 메모":"메모";
+  showMN();
   var d=m?"none":"";
   $("s2").style.display=$("acts").parentNode.style.display=d;
   $("tg").style.display="none";
@@ -384,6 +399,44 @@ setInterval(function(){pull();pullK();if(repDirty)doRep()},15000);
 document.addEventListener("visibilitychange",function(){if(document.hidden)_sv();else{pull();pullK();if(M.r==="kid")qRep()}});
 window.addEventListener("pagehide",function(){_sv()});
 pull();pullK();if(M.r==="kid"&&M.f)qRep();
+var MN=null;
+function showMN(){
+  var g=$("mnl"),on=M.r==="kid"&&M.f&&MN&&MN.a&&MN.a.length;
+  g.hidden=$("sP").hidden=!on;if(!on)return;
+  g.innerHTML="";
+  MN.a.forEach(function(m){
+    var c=mk("div","cell"),l=mk("div","mx"),d=new Date(m.t);
+    l.appendChild(mk("span","",m.x));
+    l.appendChild(mk("small","",(d.getMonth()+1)+"/"+d.getDate()+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2)));
+    c.appendChild(l);g.appendChild(c);
+  });
+}
+function doNote(){
+  if(M.r!=="mom"||!M.f||!hasDB())return;
+  fetch(DB+"/fam/"+M.f+"/n.json",{method:"PUT",body:JSON.stringify({t:Date.now(),a:memo})}).catch(function(){});
+}
+var memo=[];try{memo=JSON.parse(localStorage.getItem("allow_memo"))||[]}catch(e){}
+function mmSave(){try{localStorage.setItem("allow_memo",JSON.stringify(memo))}catch(e){}doNote()}
+function mmList(){
+  var el=$("nL");el.innerHTML="";
+  memo.forEach(function(m,i){
+    var c=mk("div","cell"),l=mk("div","mx"),d=new Date(m.t);
+    l.appendChild(mk("span","",m.x));
+    l.appendChild(mk("small","",(d.getMonth()+1)+"/"+d.getDate()+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2)));
+    c.appendChild(l);
+    c.appendChild(mkBtn("삭제","link del",function(){memo.splice(i,1);mmSave();mmList()}));
+    el.appendChild(c);
+  });
+}
+$("nB").onclick=function(){
+  var v=$("nT").value.trim();if(!v)return;
+  memo.unshift({t:Date.now(),x:v});$("nT").value="";
+  try{localStorage.removeItem("allow_memo_draft")}catch(e){}
+  mmSave();mmList();
+};
+$("nT").oninput=function(){try{localStorage.setItem("allow_memo_draft",this.value)}catch(e){}};
+try{$("nT").value=localStorage.getItem("allow_memo_draft")||""}catch(e){}
+mmList();
 momPanel();
 </script>
 </body>
