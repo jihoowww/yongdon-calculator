@@ -17,3 +17,13 @@
         </activity>
     </application>
 </manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <queries>
+        <package android:name="kr.co.happytoseeyou.app"/>
+    </queries>
+
+    <application
+        ...>
